@@ -28,7 +28,7 @@ class Exp():
 		self.gens = 25
 		self.reps = 1
 		self.lf = 'N/A'
-		self.lp = 0.0
+		self.la = 30
 		self.lr = 0.0
 		self.lt = 'N/A'
 		self.li = 'N/A'
@@ -43,7 +43,7 @@ class Exp():
 		self.gens = int(config.get('exp', 'gens'))
 		self.reps = int(config.get('exp', 'reps'))
 		self.lf = config.get('exp', 'lf')
-		self.lp = float(config.get('exp', 'lp'))
+		self.la = int(config.get('exp', 'la'))
 		self.lr = float(config.get('exp', 'lr'))
 		self.lt = config.get('exp', 'lt')
 		self.li = config.get('exp', 'li')
@@ -103,7 +103,7 @@ class DataManager():
 			if key[0] == 'N/A':
 				patches.append(mpatches.Patch(color=color, label='NEAT Regular'))
 			else:
-				label = u"Método: " + key[0] + u"; Proporção: " + str(key[1]) + '; Taxa: ' + str(key[2]) + '; Alvo: ' + key[3] + u"; Inclusão: " + key[4]
+				label = u"Método: " + key[0] + '; Syllabus: ' + str(key[1]) + '; Taxa: ' + str(key[2]) + '; Alvo: ' + key[3] + u"; Inclusão: " + key[4]
 				patches.append(mpatches.Patch(color=color, label=label))
 
 		
@@ -172,7 +172,8 @@ if __name__ == "__main__":
 					selected_keys.add(keys[i-1])
 				action_selection_menu(db, selected_keys)
 			elif i == len(keys)+1:
-				db.plot(selected_keys)
+				if len(selected_keys) > 0:
+					db.plot(selected_keys)
 				action_selection_menu(db, selected_keys)
 			elif i == len(keys)+2:
 				s = ''
@@ -310,20 +311,21 @@ def batch(g, lessons, learning_rate):
 
 ############################### EVALUATIONS ###################################
 		
-def evaluate_net(task, net, env, timeout, knowledge):
+def evaluate_net(task, net, env, timeout, knowledge, attain_knowledge):
 	if task == 'CartPole-v0' or task == 'CartPole-v1':
-		return go_CartPole(net, env, timeout, knowledge)
+		return go_CartPole(net, env, timeout, knowledge, attain_knowledge)
 	if task == 'MountainCar-v0':
-		return go_MountainCar(net, env, timeout, knowledge)
+		return go_MountainCar(net, env, timeout, knowledge, attain_knowledge)
 
 #-----------------------------------------------------------------------------#
 
-def go_CartPole(net, env, timeout, knowledge):
+def go_CartPole(net, env, timeout, knowledge, attain_knowledge):
 	inputs = env.reset()
 	total_reward = 0.0
 	for t in range(timeout):
 		outputs = net.activate(inputs)
-		knowledge.append( (inputs,outputs) )
+		if attain_knowledge:
+			knowledge.append( (inputs,outputs) )
 		action = np.argmax(outputs)
 		inputs, reward, done, _ = env.step(action)
 		if done:
@@ -332,12 +334,13 @@ def go_CartPole(net, env, timeout, knowledge):
 		total_reward += reward/(1.0 + abs(inputs[0]))
 	return total_reward
 
-def go_MountainCar(net, env, timeout, knowledge):
+def go_MountainCar(net, env, timeout, knowledge, attain_knowledge):
 	inputs = env.reset()
 	max_x = None
 	for t in range(timeout):
 		outputs = net.activate(inputs)
-		knowledge.append( (inputs,outputs) )
+		if attain_knowledge:
+			knowledge.append( (inputs,outputs) )
 		action = np.argmax(outputs)
 		inputs, reward, done, _ = env.step(action)
 		if max_x is None or max_x < inputs[0]:
@@ -366,7 +369,7 @@ class CustomReproduction(DefaultReproduction):
 			self.ancestors[key] = tuple()
 		return new_genomes
 
-	def reproduce(self, config, species, pop_size, generation, learning_function, learning_proportion, learning_rate, syllabus):
+	def reproduce(self, config, species, pop_size, generation, learning_function, learning_amount, learning_rate, syllabus):
 		all_fitnesses = []
 		for sid, s in iteritems(species.species):
 			all_fitnesses.extend(m.fitness for m in itervalues(s.members))
@@ -421,13 +424,13 @@ class CustomReproduction(DefaultReproduction):
 			repro_cutoff = max(repro_cutoff, 2)
 			old_members = old_members[:repro_cutoff]
 			
-			has_learning = learning_proportion > 0.0 and learning_rate > 0.0 and not learning_function is None
+			has_learning = learning_amount > 0 and learning_rate > 0.0 and not learning_function is None
 			(writer, lessons) = syllabus
 			'''
 			if has_learning:
 				for (_, g) in old_members:
 					if g != writer:
-						lessons_to_learn = random.sample(lessons, int(math.ceil(learning_proportion*len(lessons))))
+						lessons_to_learn = random.sample(lessons, min(learning_amount, len(lessons)))
 						learning_function(g, lessons_to_learn, learning_rate)
 			'''
 			while spawn > 0:
@@ -441,7 +444,7 @@ class CustomReproduction(DefaultReproduction):
 				child.net = FeedForwardNetwork.create(child, self.config)
 				
 				if has_learning:
-					lessons_to_learn = random.sample(lessons, int(math.ceil(learning_proportion*len(lessons))))
+					lessons_to_learn = random.sample(lessons, min(learning_amount, len(lessons)))
 					learning_function(child, lessons_to_learn, learning_rate)
 				
 				new_population[gid] = child
@@ -497,11 +500,11 @@ class CustomPopulation(Population):
 
 		self.best_genome = None
 	
-	def run(self, fitness_function, n, best_fitnesses, learning_function, learning_proportion, learning_rate):
+	def run(self, fitness_function, n, best_fitnesses, learning_function, learning_amount, learning_rate):
 		syllabus = (None,[])
-		if learning_function == 'Backpropagation':
+		if learning_function == 'BP':
 			learning_function = backpropagation
-		elif learning_function == 'Batch':
+		elif learning_function == 'BT':
 			learning_function = batch
 		elif learning_function == 'N/A':
 			learning_function = None
@@ -522,7 +525,7 @@ class CustomPopulation(Population):
 			if fv >= self.config.fitness_threshold:
 				self.reporters.found_solution(self.config, self.generation, best)
 				break
-			self.population = self.reproduction.reproduce(self.config, self.species, self.config.pop_size, self.generation, learning_function, learning_proportion, learning_rate, syllabus)
+			self.population = self.reproduction.reproduce(self.config, self.species, self.config.pop_size, self.generation, learning_function, learning_amount, learning_rate, syllabus)
 			if not self.species.species:
 				self.reporters.complete_extinction()
 				if self.config.reset_on_extinction:

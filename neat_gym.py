@@ -21,11 +21,8 @@ def worker_evaluate_genome(g, config):
 	fitnesses = []
 	knowledge = []
 	for run in range(exp.epis):
-		if run == 0:
-			#knowledge obtained from the first run, only
-			fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge))
-		else:
-			fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, []))
+		#attain knowledge on the first run, only
+		fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge, run == 0))
 	fitness = np.array(fitnesses).mean()
 	return fitness, knowledge
 
@@ -35,12 +32,12 @@ def train_network(env, pe):
 		
 	#start evolution
 	best_fitnesses = []
-	pop.run(pe.evaluate, exp.gens, best_fitnesses, exp.lf, exp.lp, exp.lr)
+	pop.run(pe.evaluate, exp.gens, best_fitnesses, exp.lf, exp.la, exp.lr)
 #	TODO	
-#	pop.run(pe.evaluate, exp.gens, best_fitnesses, exp.lf, exp.lp, exp.lr, exp.lt, exp.li)
+#	pop.run(pe.evaluate, exp.gens, best_fitnesses, exp.lf, exp.la, exp.lr, exp.lt, exp.li)
 	
 	#commit statistics
-	DataManager(exp.task).commit(exp.lf, exp.lp, exp.lr, exp.lt, exp.li, best_fitnesses)
+	DataManager(exp.task).commit(exp.lf, exp.la, exp.lr, exp.lt, exp.li, best_fitnesses)
 		
 ################################################################################################
 

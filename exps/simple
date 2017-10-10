@@ -18,11 +18,11 @@ gens = 25
 #number of experiment loops
 reps = 1
 
-#learning function. values allowed: N/A, Backpropagation, Batch
-lf = Backpropagation
+#learning function. values allowed: N/A, BP, BT
+lf = BT
 
-#learning proportion. values allowed: [0.0; 1.0]
-lp = 0.3
+#learning amount. maximum syllabus size
+la = 30
 
 #learning rate. values allowed: [0.0; 1.0]
 lr = 0.5
@@ -30,5 +30,5 @@ lr = 0.5
 #learning target. values allowed: N/A, Pais, Filhos, Ambos
 lt = Filhos
 
-#learning inclusion, in case of lt = Ambos. values allowed: N/A, Gradual, Radical
+#learning inclusion, in case of lt=Filhos or lt=Ambos. values allowed: N/A, Gradual, Radical
 li = Gradual
