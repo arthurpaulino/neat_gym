@@ -8,6 +8,7 @@ from neat.math_util import mean
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
+import ConfigParser
 import numpy as np
 import random
 import pickle
@@ -16,16 +17,46 @@ import gzip
 import glob
 import os
 
+############################### EXPERIMENT ####################################
+
+class Exp():
+	def __init__(self):
+		self.cores = 4
+		self.task = 'CartPole-v1'
+		self.timeout = 500
+		self.epis = 3
+		self.gens = 25
+		self.reps = 1
+		self.lf = 'N/A'
+		self.lp = 0.0
+		self.lr = 0.0
+		self.lt = 'N/A'
+		self.li = 'N/A'
+	
+	def parse(self, filename):
+		config = ConfigParser.ConfigParser()
+		config.read(filename)
+		self.task = config.get('exp', 'task')
+		self.cores = int(config.get('exp', 'cores'))
+		self.timeout = int(config.get('exp', 'timeout'))
+		self.epis = int(config.get('exp', 'epis'))
+		self.gens = int(config.get('exp', 'gens'))
+		self.reps = int(config.get('exp', 'reps'))
+		self.lf = config.get('exp', 'lf')
+		self.lp = float(config.get('exp', 'lp'))
+		self.lr = float(config.get('exp', 'lr'))
+		self.lt = config.get('exp', 'lt')
+		self.li = config.get('exp', 'li')
+
 ############################# DATA MANAGEMENT #################################
 
 class DataManager():
-	#simple database for plotting
 	def __init__(self, base_name='db'):
 		self.basename = base_name
 		self.filename = base_name+'.db'
 	
-	def commit(self, lp, lr, values_list):
-		key = (lp,lr)
+	def commit(self, lf, lp, lr, lt, li, values_list):
+		key = (lf,lp,lr,lt,li)
 		raw = self.querry_raw()
 		if not raw.has_key(key):
 			raw[key] = []
@@ -61,29 +92,31 @@ class DataManager():
 		if len(keys_to_plot) > len(self.colors):
 			return
 		ordered_keys_to_plot = list(keys_to_plot)
-		ordered_keys_to_plot.sort(key=lambda tup: tup[1])
-		ordered_keys_to_plot.sort(key=lambda tup: tup[0])
+		ordered_keys_to_plot.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4]))
+		ordered_keys_to_plot.sort(key=lambda tup: tup[0], reverse=True)
 		data = self.querry()
 		patches = []
 		for key, color in zip(ordered_keys_to_plot, self.colors):
 			(means, stds) = data[key]
 			plt.plot(range(len(means)), means, color = color, alpha=0.8)
 			plt.plot(range(len(stds)), stds, linestyle = '--', color = color, alpha=0.8)
-			if key == (0.0,0.0):
-				patches.append(mpatches.Patch(color=color, label='Regular'))
+			if key[0] == 'N/A':
+				patches.append(mpatches.Patch(color=color, label='NEAT Regular'))
 			else:
-				patches.append(mpatches.Patch(color=color, label=key))
+				label = u"Método: " + key[0] + u"; Proporção: " + str(key[1]) + '; Taxa: ' + str(key[2]) + '; Alvo: ' + key[3] + u"; Inclusão: " + key[4]
+				patches.append(mpatches.Patch(color=color, label=label))
 
-		patches_legend = plt.legend(handles=patches, loc='upper left', title = self.basename[-2:].upper()+'(Prop., Taxa.)')
-		continuous_line = mlines.Line2D([], [], label=u"Média dos Melhores Desempenhos", color = 'black')
-		dashed_line = mlines.Line2D([], [], label=u"Desvio Padrão", linestyle = '--', color = 'black')
-		plt.legend(handles=[continuous_line, dashed_line], bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-				 ncol=2, mode="expand", borderaxespad=0.)
-		plt.gca().add_artist(patches_legend)
+		
+		continuous_line = mlines.Line2D([], [], label=u"Média dos melhores desempenhos", color = 'black')
+		dashed_line = mlines.Line2D([], [], label=u"Desvio padrão", linestyle = '--', color = 'black')
+		lines_legend = plt.legend(handles=[continuous_line, dashed_line], loc='upper left', fontsize = 'x-small')
+		
+		plt.legend(handles=patches, bbox_to_anchor=(0, 1, 1, 0), loc='lower center', title = 'Experimentos', fontsize = 'x-small')
+		plt.gca().add_artist(lines_legend)
 
 		plt.xlabel(u"Geração")
-		plt.ylabel('Valor')
-		plt.show()
+		plt.ylabel(u"Aptidão")
+		plt.savefig(self.basename+'.png', bbox_inches='tight')
 		
 	def remove(self, keys):
 		raw = self.querry_raw()
@@ -466,6 +499,12 @@ class CustomPopulation(Population):
 	
 	def run(self, fitness_function, n, best_fitnesses, learning_function, learning_proportion, learning_rate):
 		syllabus = (None,[])
+		if learning_function == 'Backpropagation':
+			learning_function = backpropagation
+		elif learning_function == 'Batch':
+			learning_function = batch
+		elif learning_function == 'N/A':
+			learning_function = None
 		for gen in range(n):
 			self.reporters.start_generation(self.generation)
 			fitness_function(list(iteritems(self.population)), self.config)

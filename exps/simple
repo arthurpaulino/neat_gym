@@ -1,0 +1,34 @@
+[exp]
+
+#number of cpu cores
+cores = 4
+
+#gym task to be performed
+task: CartPole-v1
+
+#max gym steps allowed
+timeout = 500
+
+#number of episodes to evaluate each individual
+epis = 3
+
+#number of generations to evolve the population
+gens = 25
+
+#number of experiment loops
+reps = 1
+
+#learning function. values allowed: N/A, Backpropagation, Batch
+lf = Backpropagation
+
+#learning proportion. values allowed: [0.0; 1.0]
+lp = 0.3
+
+#learning rate. values allowed: [0.0; 1.0]
+lr = 0.5
+
+#learning target. values allowed: N/A, Pais, Filhos, Ambos
+lt = Filhos
+
+#learning inclusion, in case of lt = Ambos. values allowed: N/A, Gradual, Radical
+li = Gradual

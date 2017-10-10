@@ -2,72 +2,52 @@
 #import sys; sys.dont_write_bytecode = True
 import numpy as np
 from util import *
-import argparse
 import neat
 import gym
+import sys
 import os
 
 ################################################################################################
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--task',    type=str,   default='CartPole-v0', help='The gym task to be performed')
-parser.add_argument('--cores',   type=int,   default=4,    help="The number cores on your computer for parallel execution")
-parser.add_argument('--timeout', type=int,   default=200,  help='The max number of steps to take per genome')
-parser.add_argument('--epis',    type=int,   default=3,    help='The number or evaluations to compute mean fitness')
-parser.add_argument('--gens',    type=int,   default=25,   help="The number of generations to reach")
-parser.add_argument('--reps',    type=int,   default=1,    help="The number or experiment repetitions")
-parser.add_argument('--lf',      type=str,   default='na', help="The learning function. It can be either na (not applicable), bp (backpropagation) or bt (batch)")
-parser.add_argument('--lp',      type=float, default=0.0,  help="The proportion of the master's experience to be taught")
-parser.add_argument('--lr',      type=float, default=0.0,  help="The learning rate parameter")
-args = parser.parse_args()
+if len(sys.argv) != 2:
+	print 'usage:\n\t$ python neat_gym.py experiment_file_name'
+	exit()
+exp = Exp()
+exp.parse(sys.argv[1])
 
 ################################################################################################
 
 def worker_evaluate_genome(g, config):
 	fitnesses = []
 	knowledge = []
-	for run in range(args.epis):
+	for run in range(exp.epis):
 		if run == 0:
 			#knowledge obtained from the first run, only
-			fitnesses.append(evaluate_net(args.task, g.net, env, args.timeout, knowledge))
+			fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge))
 		else:
-			fitnesses.append(evaluate_net(args.task, g.net, env, args.timeout, []))
+			fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, []))
 	fitness = np.array(fitnesses).mean()
 	return fitness, knowledge
 
-def train_network(env, pe, learning_function):
+def train_network(env, pe):
 
 	pop = CustomPopulation(config)
 		
 	#start evolution
 	best_fitnesses = []
-	pop.run(pe.evaluate, args.gens, best_fitnesses, learning_function, args.lp, args.lr)
+	pop.run(pe.evaluate, exp.gens, best_fitnesses, exp.lf, exp.lp, exp.lr)
+#	TODO	
+#	pop.run(pe.evaluate, exp.gens, best_fitnesses, exp.lf, exp.lp, exp.lr, exp.lt, exp.li)
 	
 	#commit statistics
-	if learning_function is None or args.lp == 0.0 or args.lr == 0.0:
-		#regular NEAT evolution, record data on both databases
-		DataManager(args.task+'_bp').commit(0.0, 0.0, best_fitnesses)
-		DataManager(args.task+'_bt').commit(0.0, 0.0, best_fitnesses)
-	else:
-		#has learning involved
-		DataManager(args.task+'_'+args.lf).commit(args.lp, args.lr, best_fitnesses)
-	
+	DataManager(exp.task).commit(exp.lf, exp.lp, exp.lr, exp.lt, exp.li, best_fitnesses)
+		
 ################################################################################################
 
-if args.lf == 'bp':
-	learning_function = backpropagation
-elif args.lf == 'bt':
-	learning_function = batch
-elif args.lf == 'na':
-	learning_function = None
-else:
-	print 'Unknown learning function'
-	exit()
+env = gym.make(exp.task)
+config = neat.Config(CustomGenome, CustomReproduction,	neat.DefaultSpeciesSet, neat.DefaultStagnation, exp.task)
+pe = CustomParallelEvaluator(exp.cores, worker_evaluate_genome)
 
-env = gym.make(args.task)
-config = neat.Config(CustomGenome, CustomReproduction,	neat.DefaultSpeciesSet, neat.DefaultStagnation, args.task)
-pe = CustomParallelEvaluator(args.cores, worker_evaluate_genome)
-
-for i in range(args.reps):
-	print '----------==========##########Experiment {}/{}:'.format(i+1, args.reps)
-	train_network(env, pe, learning_function)
+for i in range(exp.reps):
+	print '----------==========##########Experiment {}/{}:'.format(i+1, exp.reps)
+	train_network(env, pe)
