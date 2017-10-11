@@ -36,17 +36,29 @@ class Exp():
 	def parse(self, filename):
 		config = ConfigParser.ConfigParser()
 		config.read(filename)
-		self.task = config.get('exp', 'task')
-		self.cores = int(config.get('exp', 'cores'))
-		self.timeout = int(config.get('exp', 'timeout'))
-		self.epis = int(config.get('exp', 'epis'))
-		self.gens = int(config.get('exp', 'gens'))
-		self.reps = int(config.get('exp', 'reps'))
-		self.lf = config.get('exp', 'lf')
-		self.la = int(config.get('exp', 'la'))
-		self.lr = float(config.get('exp', 'lr'))
-		self.lt = config.get('exp', 'lt')
-		self.li = config.get('exp', 'li')
+		if config.has_option('exp', 'task'):
+			self.task = config.get('exp', 'task')
+		if config.has_option('exp', 'cores'):
+			self.cores = int(config.get('exp', 'cores'))
+		if config.has_option('exp', 'timeout'):
+			self.timeout = int(config.get('exp', 'timeout'))
+		if config.has_option('exp', 'epis'):
+			self.epis = int(config.get('exp', 'epis'))
+		if config.has_option('exp', 'gens'):
+			self.gens = int(config.get('exp', 'gens'))
+		if config.has_option('exp', 'reps'):
+			self.reps = int(config.get('exp', 'reps'))
+		if config.has_option('exp', 'lf'):
+			self.lf = config.get('exp', 'lf')
+		if config.has_option('exp', 'la'):
+			self.la = int(config.get('exp', 'la'))
+		if config.has_option('exp', 'lr'):
+			self.lr = float(config.get('exp', 'lr'))
+		if config.has_option('exp', 'lt'):
+			self.lt = config.get('exp', 'lt')
+		if config.has_option('exp', 'li'):
+			self.li = config.get('exp', 'li')
+		return self
 
 ############################# DATA MANAGEMENT #################################
 

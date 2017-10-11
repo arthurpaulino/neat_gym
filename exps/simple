@@ -1,34 +1,38 @@
 [exp]
 
-#number of cpu cores
+######### RUN
+
+#number of cpu cores. default = 4
 cores = 4
 
-#gym task to be performed
-task: CartPole-v1
+#gym task to be performed. default = CartPole-v1
+#task: CartPole-v1
 
-#max gym steps allowed
-timeout = 500
+#max gym steps allowed. default = 500
+#timeout = 500
 
-#number of episodes to evaluate each individual
-epis = 3
+#number of episodes to evaluate each individual. default = 3
+#epis = 3
 
-#number of generations to evolve the population
-gens = 25
+#number of generations to evolve the population. default = 25
+#gens = 25
 
-#number of experiment loops
-reps = 1
+#number of experiment loops. default = 1
+#reps = 1
 
-#learning function. values allowed: N/A, BP, BT
+######### LEARNING
+
+#learning function. values allowed: N/A, BP, BT. default = N/A
 lf = BT
 
-#learning amount. maximum syllabus size
-la = 30
+#learning amount. maximum syllabus size. default = 30
+#la = 30
 
-#learning rate. values allowed: [0.0; 1.0]
+#learning rate. values allowed: [0.0; 1.0]. default = 0.0
 lr = 0.5
 
-#learning target. values allowed: N/A, Pais, Filhos, Ambos
+#learning target. values allowed: N/A, Pais, Filhos, Ambos. default = N/A
 lt = Filhos
 
-#learning inclusion, in case of lt=Filhos or lt=Ambos. values allowed: N/A, Gradual, Radical
+#learning inclusion, in case of lt=Filhos or lt=Ambos. values allowed: N/A, Gradual, Radical. default = N/A
 li = Gradual

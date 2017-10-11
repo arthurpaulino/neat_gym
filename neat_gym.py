@@ -12,8 +12,7 @@ import os
 if len(sys.argv) != 2:
 	print 'usage:\n\t$ python neat_gym.py experiment_file_name'
 	exit()
-exp = Exp()
-exp.parse(sys.argv[1])
+exp = Exp().parse(sys.argv[1])
 
 ################################################################################################
 
