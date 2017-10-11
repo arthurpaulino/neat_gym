@@ -6,6 +6,6 @@
 * [neat-python](https://pypi.python.org/pypi/neat-python/0.92)
 
 ## Usage examples
-`$ python neat_gym.py exps/simple`
+`$ python neat_gym.py exps/default`
 
 `$ python util.py`

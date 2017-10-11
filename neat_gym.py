@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#import sys; sys.dont_write_bytecode = True
 import numpy as np
 from util import *
 import neat

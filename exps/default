@@ -24,15 +24,15 @@
 
 #	The learning process can be done either by BackPropagation or BaTch.
 #	The values allowed are N/A, BP or BT. The default value is N/A.
-learning_function = BT
+#learning_function = N/A
 
 #	Depending on the learning function, the learning rate means different things.
 #	For the backpropagation algorithm, the learning rate is the typical parameter
 #	that regulates how much we're moving on the opposite direction of the gradient.
 #	For the batch algorithm, the learning rate refers to how close to the solution
-#	we want the weights to be.
+#	we want the final weights to be.
 #	The values allowed are in the interval [0.0; 1.0]. The default value is 0.0.
-learning_rate = 0.5
+#learning_rate = 0.0
 
 #	We're able to choose the targets of the learning process.
 #	The values allowed are Pais, Filhos or Ambos. The default value is Pais.

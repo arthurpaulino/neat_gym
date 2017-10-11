@@ -181,7 +181,7 @@ if __name__ == "__main__":
 				print '{}. +{}: {} experiment(s)'.format(i+1, key, len(raw[key][0]))
 			else:
 				print '{}. -{}: {} experiment(s)'.format(i+1, key, len(raw[key][0]))
-		print '{}. Plot ({} colors available)'.format(len(keys)+1, len(db.colors))
+		print '{}. Render {}.png ({} colors available)'.format(len(keys)+1, db.basename, len(db.colors))
 		print '{}. Remove'.format(len(keys)+2)
 		print '{}. Return'.format(len(keys)+3)
 		print '{}. Exit'.format(len(keys)+4)
