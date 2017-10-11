@@ -29,7 +29,7 @@ class Exp():
 		self.repetitions = 2
 		self.learning_function = 'N/A'
 		self.learning_rate = 0.0
-		self.learning_target = 'N/A'
+		self.learning_target = 'Pais'
 		self.children_inclusion = 'N/A'
 		self.syllabus_source = 'EXP'
 		self.syllabus_size = 30

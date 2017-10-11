@@ -35,8 +35,8 @@ learning_function = BT
 learning_rate = 0.5
 
 #	We're able to choose the targets of the learning process.
-#	The values allowed are N/A, Pais, Filhos or Ambos. The default value is N/A.
-learning_target = Pais
+#	The values allowed are Pais, Filhos or Ambos. The default value is Pais.
+#learning_target = Pais
 
 #	If children are supposed to learn, we can choose whether they start learning
 #	in the beginning of the evolutionary process or half way.
