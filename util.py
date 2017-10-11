@@ -24,51 +24,59 @@ class Exp():
 		self.cores = 4
 		self.task = 'CartPole-v1'
 		self.timeout = 500
-		self.epis = 3
-		self.gens = 25
-		self.reps = 1
-		self.lf = 'N/A'
-		self.la = 30
-		self.lr = 0.0
-		self.lt = 'N/A'
-		self.li = 'N/A'
+		self.episodes = 3
+		self.generations = 25
+		self.repetitions = 2
+		self.learning_function = 'N/A'
+		self.learning_rate = 0.0
+		self.learning_target = 'N/A'
+		self.children_inclusion = 'N/A'
+		self.syllabus_source = 'EXP'
+		self.syllabus_size = 30
 	
 	def parse(self, filename):
 		config = ConfigParser.ConfigParser()
 		config.read(filename)
-		if config.has_option('exp', 'task'):
-			self.task = config.get('exp', 'task')
 		if config.has_option('exp', 'cores'):
 			self.cores = int(config.get('exp', 'cores'))
+		if config.has_option('exp', 'task'):
+			self.task = config.get('exp', 'task')
 		if config.has_option('exp', 'timeout'):
 			self.timeout = int(config.get('exp', 'timeout'))
-		if config.has_option('exp', 'epis'):
-			self.epis = int(config.get('exp', 'epis'))
-		if config.has_option('exp', 'gens'):
-			self.gens = int(config.get('exp', 'gens'))
-		if config.has_option('exp', 'reps'):
-			self.reps = int(config.get('exp', 'reps'))
-		if config.has_option('exp', 'lf'):
-			self.lf = config.get('exp', 'lf')
-		if config.has_option('exp', 'la'):
-			self.la = int(config.get('exp', 'la'))
-		if config.has_option('exp', 'lr'):
-			self.lr = float(config.get('exp', 'lr'))
-		if config.has_option('exp', 'lt'):
-			self.lt = config.get('exp', 'lt')
-		if config.has_option('exp', 'li'):
-			self.li = config.get('exp', 'li')
+		if config.has_option('exp', 'episodes'):
+			self.episodes = int(config.get('exp', 'episodes'))
+		if config.has_option('exp', 'generations'):
+			self.generations = int(config.get('exp', 'generations'))
+		if config.has_option('exp', 'repetitions'):
+			self.repetitions = int(config.get('exp', 'repetitions'))
+		if config.has_option('exp', 'learning_function'):
+			self.learning_function = config.get('exp', 'learning_function')
+		if config.has_option('exp', 'learning_rate'):
+			self.learning_rate = float(config.get('exp', 'learning_rate'))
+		if config.has_option('exp', 'learning_target'):
+			self.learning_target = config.get('exp', 'learning_target')
+		if config.has_option('exp', 'children_inclusion'):
+			self.children_inclusion = config.get('exp', 'children_inclusion')
+		if config.has_option('exp', 'syllabus_source'):
+			self.syllabus_source = config.get('exp', 'syllabus_source')
+		if config.has_option('exp', 'syllabus_size'):
+			self.syllabus_size = int(config.get('exp', 'syllabus_size'))
 		return self
 
 ############################# DATA MANAGEMENT #################################
 
 class DataManager():
-	def __init__(self, base_name='db'):
-		self.basename = base_name
-		self.filename = base_name+'.db'
+	def __init__(self, inpt):
+		if isinstance(inpt, Exp):
+			self.basename = inpt.task
+			self.filename = self.basename+'.db'
+			self.exp = inpt
+		elif isinstance(inpt, basestring):
+			self.basename = inpt
+			self.filename = self.basename+'.db'
 	
-	def commit(self, lf, lp, lr, lt, li, values_list):
-		key = (lf,lp,lr,lt,li)
+	def commit(self, values_list):
+		key = (self.exp.learning_function,self.exp.learning_rate,self.exp.learning_target,self.exp.children_inclusion,self.exp.syllabus_source,self.exp.syllabus_size)
 		raw = self.querry_raw()
 		if not raw.has_key(key):
 			raw[key] = []
@@ -104,7 +112,7 @@ class DataManager():
 		if len(keys_to_plot) > len(self.colors):
 			return
 		ordered_keys_to_plot = list(keys_to_plot)
-		ordered_keys_to_plot.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4]))
+		ordered_keys_to_plot.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
 		ordered_keys_to_plot.sort(key=lambda tup: tup[0], reverse=True)
 		data = self.querry()
 		patches = []
@@ -115,7 +123,7 @@ class DataManager():
 			if key[0] == 'N/A':
 				patches.append(mpatches.Patch(color=color, label='NEAT Regular'))
 			else:
-				label = u"Método: " + key[0] + '; Syllabus: ' + str(key[1]) + '; Taxa: ' + str(key[2]) + '; Alvo: ' + key[3] + u"; Inclusão: " + key[4]
+				label = u"Método: " + key[0] + '; Taxa: ' + str(key[1]) + '; Alvo: ' + key[2] + u"; Inclusão: " + key[3] + u"; Lições: " + str(key[4]) + '; Fonte: ' + str(key[5])
 				patches.append(mpatches.Patch(color=color, label=label))
 
 		
@@ -152,9 +160,11 @@ if __name__ == "__main__":
 			if i == len(db_names)+1:
 				return
 			db = DataManager(db_names[i-1])
-			all_keys = set()
+			all_keys = []
 			for key in db.querry_raw():
-				all_keys.add(key)
+				all_keys.append(key)
+			all_keys.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
+			all_keys.sort(key=lambda tup: tup[0], reverse=True)
 			action_selection_menu(db, all_keys)
 		except:
 			db_selection_menu()
@@ -181,7 +191,7 @@ if __name__ == "__main__":
 				if keys[i-1] in selected_keys:
 					selected_keys.remove(keys[i-1])
 				else:
-					selected_keys.add(keys[i-1])
+					selected_keys.append(keys[i-1])
 				action_selection_menu(db, selected_keys)
 			elif i == len(keys)+1:
 				if len(selected_keys) > 0:
@@ -381,7 +391,7 @@ class CustomReproduction(DefaultReproduction):
 			self.ancestors[key] = tuple()
 		return new_genomes
 
-	def reproduce(self, config, species, pop_size, generation, learning_function, learning_amount, learning_rate, syllabus):
+	def reproduce(self, config, species, pop_size, generation, exp, syllabus):
 		all_fitnesses = []
 		for sid, s in iteritems(species.species):
 			all_fitnesses.extend(m.fitness for m in itervalues(s.members))
@@ -418,6 +428,18 @@ class CustomReproduction(DefaultReproduction):
 		spawn_amounts = [int(round(n * norm)) for n in spawn_amounts]
 		new_population = {}
 		species.species = {}
+		
+		learning_function = None
+		if exp.learning_function == 'BP':
+			learning_function = backpropagation
+		elif exp.learning_function == 'BT':
+			learning_function = batch
+		
+		has_learning = not learning_function is None
+		if has_learning:
+			(writer, lessons) = syllabus
+			lessons_to_learn = random.sample(lessons, min(exp.syllabus_size, len(lessons)))
+		
 		for spawn, (sid, s, sfitness) in zip(spawn_amounts, species_fitness):
 			spawn = max(spawn, self.elitism)
 			if spawn <= 0:
@@ -436,15 +458,11 @@ class CustomReproduction(DefaultReproduction):
 			repro_cutoff = max(repro_cutoff, 2)
 			old_members = old_members[:repro_cutoff]
 			
-			has_learning = learning_amount > 0 and learning_rate > 0.0 and not learning_function is None
-			(writer, lessons) = syllabus
-			'''
-			if has_learning:
+			if has_learning and (exp.learning_target == 'Ambos' or exp.learning_target == 'Pais'):
 				for (_, g) in old_members:
 					if g != writer:
-						lessons_to_learn = random.sample(lessons, min(learning_amount, len(lessons)))
-						learning_function(g, lessons_to_learn, learning_rate)
-			'''
+						learning_function(g, lessons_to_learn, exp.learning_rate)
+						
 			while spawn > 0:
 				spawn -= 1
 				parent1_id, parent1 = random.choice(old_members)
@@ -455,9 +473,9 @@ class CustomReproduction(DefaultReproduction):
 				child.mutate(config.genome_config)
 				child.net = FeedForwardNetwork.create(child, self.config)
 				
-				if has_learning:
-					lessons_to_learn = random.sample(lessons, min(learning_amount, len(lessons)))
-					learning_function(child, lessons_to_learn, learning_rate)
+				if has_learning and (exp.learning_target == 'Ambos' or exp.learning_target == 'Filhos'):
+					if exp.children_inclusion == 'Inicial' or (exp.children_inclusion == 'Tardia' and generation >= exp.generations/2):
+						learning_function(child, lessons_to_learn, exp.learning_rate)
 				
 				new_population[gid] = child
 				self.ancestors[gid] = (parent1_id, parent2_id)
@@ -512,15 +530,9 @@ class CustomPopulation(Population):
 
 		self.best_genome = None
 	
-	def run(self, fitness_function, n, best_fitnesses, learning_function, learning_amount, learning_rate):
+	def run(self, fitness_function, best_fitnesses, exp):
 		syllabus = (None,[])
-		if learning_function == 'BP':
-			learning_function = backpropagation
-		elif learning_function == 'BT':
-			learning_function = batch
-		elif learning_function == 'N/A':
-			learning_function = None
-		for gen in range(n):
+		for gen in range(exp.generations):
 			self.reporters.start_generation(self.generation)
 			fitness_function(list(iteritems(self.population)), self.config)
 			best = None
@@ -529,7 +541,6 @@ class CustomPopulation(Population):
 					best = g
 			syllabus = (best, best.knowledge)
 			best_fitnesses.append(best.fitness)
-			print 'Generation {}/{}. Best fitness: {}.'.format(gen+1, n, best.fitness)
 			self.reporters.post_evaluate(self.config, self.population, self.species, best)
 			if self.best_genome is None or best.fitness > self.best_genome.fitness:
 				self.best_genome = best
@@ -537,7 +548,7 @@ class CustomPopulation(Population):
 			if fv >= self.config.fitness_threshold:
 				self.reporters.found_solution(self.config, self.generation, best)
 				break
-			self.population = self.reproduction.reproduce(self.config, self.species, self.config.pop_size, self.generation, learning_function, learning_amount, learning_rate, syllabus)
+			self.population = self.reproduction.reproduce(self.config, self.species, self.config.pop_size, self.generation, exp, syllabus)
 			if not self.species.species:
 				self.reporters.complete_extinction()
 				if self.config.reset_on_extinction:
