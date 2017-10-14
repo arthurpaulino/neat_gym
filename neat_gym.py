@@ -11,7 +11,11 @@ import os
 if len(sys.argv) != 2:
 	print 'usage:\n\t$ python neat_gym.py experiment_file_name'
 	exit()
-exp = Exp().parse(sys.argv[1])
+try:
+	exp = Exp().parse(sys.argv[1])
+except ValueError as err:
+    print(err.args[0])
+    exit()
 
 ################################################################################################
 
@@ -19,8 +23,8 @@ def worker_evaluate_genome(g, config):
 	fitnesses = []
 	knowledge = []
 	for run in range(exp.episodes):
-		#attain knowledge on the first run, only
-		fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge, run == 0))
+		#attain knowledge from the first run, only
+		fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge, run == 0, exp.syllabus_source))
 	fitness = np.array(fitnesses).mean()
 	return fitness, knowledge
 

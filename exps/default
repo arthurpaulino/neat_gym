@@ -31,23 +31,24 @@
 #	that regulates how much we're moving on the opposite direction of the gradient.
 #	For the batch algorithm, the learning rate refers to how close to the solution
 #	we want the final weights to be.
-#	The values allowed are in the interval [0.0; 1.0]. The default value is 0.0.
-#learning_rate = 0.0
+#	The values allowed are in the interval (0.0; 1.0]. The default value is 0.1.
+#learning_rate = 0.1
 
 #	We're able to choose the targets of the learning process.
-#	The values allowed are Pais, Filhos or Ambos. The default value is Pais.
-#learning_target = Pais
+#	The values allowed are Pais, Filhos or Ambos. The default value is Ambos.
+#learning_target = Ambos
 
 #	If children are supposed to learn, we can choose whether they start learning
 #	in the beginning of the evolutionary process or half way.
-#	the values allowed are N/A, Inicial or Tardia. The default value is N/A.
-#children_inclusion = N/A
+#	The values allowed are Inicial or Tardia. The default value is Tardia.
+#children_inclusion = Tardia
 
 #	The lessons to be learned can be generated randomly or from memories of
 #	the best individual in the population.
 #	The values allowed are EXP or RND. The default value is EXP.
 #syllabus_source = EXP
 
-#	The size of the syllabus can have a heavy impact on the results of the evolutionary process.
-#	The default value is 30.
+#	The size of the syllabus can have a heavy impact on the results of the
+#	evolutionary process. Use this attribute to set the maximum size of the syllabus.
+#	The values allowed are greater than 0. The default value is 30.
 #syllabus_size = 30

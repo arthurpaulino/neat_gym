@@ -28,9 +28,9 @@ class Exp():
 		self.generations = 25
 		self.repetitions = 2
 		self.learning_function = 'N/A'
-		self.learning_rate = 0.0
-		self.learning_target = 'Pais'
-		self.children_inclusion = 'N/A'
+		self.learning_rate = 0.1
+		self.learning_target = 'Ambos'
+		self.children_inclusion = 'Tardia'
 		self.syllabus_source = 'EXP'
 		self.syllabus_size = 30
 	
@@ -61,6 +61,21 @@ class Exp():
 			self.syllabus_source = config.get('exp', 'syllabus_source')
 		if config.has_option('exp', 'syllabus_size'):
 			self.syllabus_size = int(config.get('exp', 'syllabus_size'))
+		
+		if self.learning_function != 'N/A':
+			if self.learning_function != 'BP' and self.learning_function != 'BT':
+				raise ValueError('Invalid learning function value: {}'.format(self.learning_function))
+			if self.learning_rate <= 0.0 or self.learning_rate > 1.0:
+				raise ValueError('Invalid learning rate value: {}'.format(self.learning_rate))
+			if self.learning_target != 'Pais' and self.learning_target != 'Filhos' and self.learning_target != 'Ambos':
+				raise ValueError('Invalid learning target value: {}'.format(self.learning_target))
+			if self.children_inclusion != 'Inicial' and self.children_inclusion != 'Tardia':
+				raise ValueError('Invalid children inclusion value: {}'.format(self.children_inclusion))
+			if self.syllabus_source != 'EXP' and self.syllabus_source != 'RND':
+				raise ValueError('Invalid syllabus source value: {}'.format(self.syllabus_source))
+			if self.syllabus_size < 1:
+				raise ValueError('Invalid syllabus size value: {}'.format(self.syllabus_size))
+		
 		return self
 
 ############################# DATA MANAGEMENT #################################
@@ -158,6 +173,7 @@ if __name__ == "__main__":
 		try:
 			i = input(": ")
 			if i == len(db_names)+1:
+				os.system('clear')
 				return
 			db = DataManager(db_names[i-1])
 			all_keys = []
@@ -211,6 +227,7 @@ if __name__ == "__main__":
 			elif i == len(keys)+3:
 				db_selection_menu()
 			elif i == len(keys)+4:
+				os.system('clear')
 				return
 			else:
 				action_selection_menu(db, selected_keys)
@@ -333,22 +350,33 @@ def batch(g, lessons, learning_rate):
 
 ############################### EVALUATIONS ###################################
 		
-def evaluate_net(task, net, env, timeout, knowledge, attain_knowledge):
+def evaluate_net(task, net, env, timeout, knowledge, attain_knowledge, knowledge_source):
 	if task == 'CartPole-v0' or task == 'CartPole-v1':
-		return go_CartPole(net, env, timeout, knowledge, attain_knowledge)
+		return go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source)
 	if task == 'MountainCar-v0':
-		return go_MountainCar(net, env, timeout, knowledge, attain_knowledge)
+		return go_MountainCar(net, env, timeout, knowledge, attain_knowledge, knowledge_source)
+
+def process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source):
+	outputs = net.activate(inputs)
+	if attain_knowledge:
+		if knowledge_source == 'EXP':
+			knowledge.append( (inputs,outputs) )
+		elif knowledge_source == 'RND':
+			low = env.observation_space.low
+			high = env.observation_space.high
+			rand_inputs = []
+			for i in range(0, len(low)):
+				rand_inputs.append(random.uniform(max(low[i], -100), min(high[i], 100)))
+			knowledge.append( (rand_inputs,net.activate(rand_inputs)) )
+	return np.argmax(outputs)
 
 #-----------------------------------------------------------------------------#
 
-def go_CartPole(net, env, timeout, knowledge, attain_knowledge):
+def go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source):
 	inputs = env.reset()
 	total_reward = 0.0
 	for t in range(timeout):
-		outputs = net.activate(inputs)
-		if attain_knowledge:
-			knowledge.append( (inputs,outputs) )
-		action = np.argmax(outputs)
+		action = process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source)
 		inputs, reward, done, _ = env.step(action)
 		if done:
 			break
@@ -356,14 +384,11 @@ def go_CartPole(net, env, timeout, knowledge, attain_knowledge):
 		total_reward += reward/(1.0 + abs(inputs[0]))
 	return total_reward
 
-def go_MountainCar(net, env, timeout, knowledge, attain_knowledge):
+def go_MountainCar(net, env, timeout, knowledge, attain_knowledge, knowledge_source):
 	inputs = env.reset()
 	max_x = None
 	for t in range(timeout):
-		outputs = net.activate(inputs)
-		if attain_knowledge:
-			knowledge.append( (inputs,outputs) )
-		action = np.argmax(outputs)
+		action = process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source)
 		inputs, reward, done, _ = env.step(action)
 		if max_x is None or max_x < inputs[0]:
 			max_x = inputs[0]
@@ -375,7 +400,7 @@ def go_MountainCar(net, env, timeout, knowledge, attain_knowledge):
 ################################ INHERITANCES #################################
 
 class CustomReproduction(DefaultReproduction):
-	#marks the genomes with the generation they're born at
+	#marks the genomes with the generation they're born at and performs the learning on reproduce(...)
 	def __init__(self, config, reporters, stagnation):
 		super(CustomReproduction, self).__init__(config.reproduction_config, reporters, stagnation)
 		self.config = config
