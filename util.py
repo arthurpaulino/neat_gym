@@ -146,7 +146,7 @@ class DataManager():
 		dashed_line = mlines.Line2D([], [], label=u"Desvio padrão", linestyle = '--', color = 'black')
 		lines_legend = plt.legend(handles=[continuous_line, dashed_line], loc='upper left', fontsize = 'x-small')
 		
-		plt.legend(handles=patches, bbox_to_anchor=(0, 1, 1, 0), loc='lower center', title = 'Experimentos', fontsize = 'x-small')
+		plt.legend(handles=patches, bbox_to_anchor=(0, 1, 1, 0), loc='lower center', title = self.basename, fontsize = 'x-small')
 		plt.gca().add_artist(lines_legend)
 
 		plt.xlabel(u"Geração")
@@ -583,4 +583,5 @@ class CustomPopulation(Population):
 			self.species.speciate(self.config, self.population, self.generation)
 			self.reporters.end_generation(self.config, self.population, self.species)
 			self.generation += 1
+			#print "pop: {} ({} species)".format(len(self.population), len(self.species.species))
 		return self.best_genome
