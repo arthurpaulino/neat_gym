@@ -221,7 +221,7 @@ if __name__ == "__main__":
 				answer = raw_input('Confirm (yes)? ')
 				if answer == 'yes':
 					db.remove(selected_keys)
-					action_selection_menu(db, set())
+					action_selection_menu(db, [])
 				else:
 					action_selection_menu(db, selected_keys)
 			elif i == len(keys)+3:
