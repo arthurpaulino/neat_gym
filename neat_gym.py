@@ -24,7 +24,7 @@ def worker_evaluate_genome(g, config):
 	knowledge = []
 	for run in range(exp.episodes):
 		#attain knowledge from the first run, only
-		fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge, run == 0, exp.syllabus_source))
+		fitnesses.append(evaluate_net(exp.task, g.net, env, exp.timeout, knowledge, run == 0, exp.syllabus_source, exp.syllabus_size))
 	fitness = np.array(fitnesses).mean()
 	return fitness, knowledge
 

@@ -350,18 +350,18 @@ def batch(g, lessons, learning_rate):
 
 ############################### EVALUATIONS ###################################
 		
-def evaluate_net(task, net, env, timeout, knowledge, attain_knowledge, knowledge_source):
+def evaluate_net(task, net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size):
 	if task == 'CartPole-v0' or task == 'CartPole-v1':
-		return go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source)
+		return go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size)
 	if task == 'MountainCar-v0':
-		return go_MountainCar(net, env, timeout, knowledge, attain_knowledge, knowledge_source)
+		return go_MountainCar(net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size)
 
-def process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source):
+def process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source, knowledge_size):
 	outputs = net.activate(inputs)
 	if attain_knowledge:
 		if knowledge_source == 'EXP':
 			knowledge.append( (inputs,outputs) )
-		elif knowledge_source == 'RND':
+		elif knowledge_source == 'RND' and len(knowledge) < knowledge_size:
 			low = env.observation_space.low
 			high = env.observation_space.high
 			rand_inputs = []
@@ -372,11 +372,11 @@ def process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_sour
 
 #-----------------------------------------------------------------------------#
 
-def go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source):
+def go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size):
 	inputs = env.reset()
 	total_reward = 0.0
 	for t in range(timeout):
-		action = process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source)
+		action = process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source, knowledge_size)
 		inputs, reward, done, _ = env.step(action)
 		if done:
 			break
@@ -384,11 +384,11 @@ def go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source
 		total_reward += reward/(1.0 + abs(inputs[0]))
 	return total_reward
 
-def go_MountainCar(net, env, timeout, knowledge, attain_knowledge, knowledge_source):
+def go_MountainCar(net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size):
 	inputs = env.reset()
 	max_x = None
 	for t in range(timeout):
-		action = process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source)
+		action = process_inputs(net, env, inputs, knowledge, attain_knowledge, knowledge_source, knowledge_size)
 		inputs, reward, done, _ = env.step(action)
 		if max_x is None or max_x < inputs[0]:
 			max_x = inputs[0]
@@ -463,7 +463,10 @@ class CustomReproduction(DefaultReproduction):
 		has_learning = not learning_function is None
 		if has_learning:
 			(writer, lessons) = syllabus
-			lessons_to_learn = random.sample(lessons, min(exp.syllabus_size, len(lessons)))
+			if exp.syllabus_source == 'EXP':
+				lessons_to_learn = random.sample(lessons, min(exp.syllabus_size, len(lessons)))
+			elif exp.syllabus_source == 'RND':
+				lessons_to_learn = lessons
 		
 		for spawn, (sid, s, sfitness) in zip(spawn_amounts, species_fitness):
 			spawn = max(spawn, self.elitism)
