@@ -1,0 +1,54 @@
+[exp]
+
+################# RUNNING PARAMETERS
+
+#	Number of cpu cores to be used in the experiment. The default value is 4.
+#cores = 4
+
+#	Gym task to be performed. The default value is CartPole-v1.
+task: MountainCar-v0
+
+#	Max number of steps allowed in the gym environment per evaluation. The default value is 500.
+#timeout = 500
+
+#	Number of episodes to evaluate each individual. The default value is 3.
+#episodes = 3
+
+#	Number of generations to evolve the population. The default value is 25.
+generations = 30
+
+#	Number of experiment loops. The default value is 2.
+repetitions = 500
+
+################# LEARNING PARAMETERS
+
+#	The learning process can be done either by BackPropagation or BaTch.
+#	The values allowed are N/A, BP or BT. The default value is N/A.
+learning_function = BT
+
+#	Depending on the learning function, the learning rate means different things.
+#	For the backpropagation algorithm, the learning rate is the typical parameter
+#	that regulates how much we're moving on the opposite direction of the gradient.
+#	For the batch algorithm, the learning rate refers to how close to the solution
+#	we want the final weights to be.
+#	The values allowed are in the interval (0.0; 1.0]. The default value is 0.1.
+learning_rate = 0.75
+
+#	We're able to choose the targets of the learning process.
+#	The values allowed are Pais, Filhos or Ambos. The default value is Ambos.
+learning_target = Filhos
+
+#	If children are supposed to learn, we can choose whether they start learning
+#	in the beginning of the evolutionary process or half way.
+#	The values allowed are Inicial or Tardia. The default value is Tardia.
+children_inclusion = Inicial
+
+#	The lessons to be learned can be generated randomly or from memories of
+#	the best individual in the population.
+#	The values allowed are EXP or RND. The default value is EXP.
+syllabus_source = RND
+
+#	The size of the syllabus can have a heavy impact on the results of the
+#	evolutionary process. Use this attribute to set the maximum size of the syllabus.
+#	The values allowed are greater than 0. The default value is 30.
+#syllabus_size = 30
