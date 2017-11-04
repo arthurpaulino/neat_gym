@@ -43,6 +43,9 @@ def train_network(env, pe):
 
 env = gym.make(exp.task)
 config = neat.Config(CustomGenome, CustomReproduction,	neat.DefaultSpeciesSet, neat.DefaultStagnation, exp.task)
+if exp.learning_function != 'N/A':
+	#preventing speciation boom
+	config.genome_config.compatibility_weight_coefficient = 0.0
 pe = CustomParallelEvaluator(exp.cores, worker_evaluate_genome)
 
 for i in range(exp.repetitions):

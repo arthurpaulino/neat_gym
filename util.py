@@ -176,12 +176,7 @@ if __name__ == "__main__":
 				os.system('clear')
 				return
 			db = DataManager(db_names[i-1])
-			all_keys = []
-			for key in db.querry_raw():
-				all_keys.append(key)
-			all_keys.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
-			all_keys.sort(key=lambda tup: tup[0], reverse=True)
-			action_selection_menu(db, all_keys)
+			action_selection_menu(db, [])
 		except:
 			db_selection_menu()
 	
@@ -192,6 +187,8 @@ if __name__ == "__main__":
 		raw = db.querry_raw()
 		for key in raw:
 			keys.append(key)
+		keys.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
+		keys.sort(key=lambda tup: tup[0], reverse=True)
 		for i, key in zip(range(len(keys)), keys):
 			if key in selected_keys:
 				print '{}. +{}: {} experiment(s)'.format(i+1, key, len(raw[key][0]))
