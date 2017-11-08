@@ -152,6 +152,7 @@ class DataManager():
 		plt.xlabel(u"Geração")
 		plt.ylabel(u"Aptidão")
 		plt.savefig(self.basename+'.png', bbox_inches='tight')
+		plt.gcf().clear()
 		
 	def remove(self, keys):
 		raw = self.querry_raw()
@@ -176,19 +177,19 @@ if __name__ == "__main__":
 				os.system('clear')
 				return
 			db = DataManager(db_names[i-1])
-			action_selection_menu(db, [])
+			keys = []
+			raw = db.querry_raw()
+			for key in raw:
+				keys.append(key)
+			keys.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
+			keys.sort(key=lambda tup: tup[0], reverse=True)
+			action_selection_menu(db, raw, keys, [])
 		except:
 			db_selection_menu()
 	
-	def action_selection_menu(db, selected_keys):
+	def action_selection_menu(db, raw, keys, selected_keys):
 		os.system('clear')
 		print db.basename
-		keys = []
-		raw = db.querry_raw()
-		for key in raw:
-			keys.append(key)
-		keys.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
-		keys.sort(key=lambda tup: tup[0], reverse=True)
 		for i, key in zip(range(len(keys)), keys):
 			if key in selected_keys:
 				print '{}. +{}: {} experiment(s)'.format(i+1, key, len(raw[key][0]))
@@ -205,11 +206,11 @@ if __name__ == "__main__":
 					selected_keys.remove(keys[i-1])
 				else:
 					selected_keys.append(keys[i-1])
-				action_selection_menu(db, selected_keys)
+				action_selection_menu(db, raw, keys, selected_keys)
 			elif i == len(keys)+1:
 				if len(selected_keys) > 0:
 					db.plot(selected_keys)
-				action_selection_menu(db, selected_keys)
+				action_selection_menu(db, raw, keys, selected_keys)
 			elif i == len(keys)+2:
 				if len(selected_keys) > 0:
 					s = ''
@@ -219,20 +220,26 @@ if __name__ == "__main__":
 					answer = raw_input('Confirm (yes)? ')
 					if answer == 'yes':
 						db.remove(selected_keys)
-						action_selection_menu(db, [])
+						keys = []
+						raw = db.querry_raw()
+						for key in raw:
+							keys.append(key)
+						keys.sort(key=lambda tup: (tup[1], tup[2], tup[3], tup[4], tup[5]))
+						keys.sort(key=lambda tup: tup[0], reverse=True)
+						action_selection_menu(db, raw, keys, [])
 					else:
-						action_selection_menu(db, selected_keys)
+						action_selection_menu(db, raw, keys, selected_keys)
 				else:
-					action_selection_menu(db, selected_keys)
+					action_selection_menu(db, raw, keys, selected_keys)
 			elif i == len(keys)+3:
 				db_selection_menu()
 			elif i == len(keys)+4:
 				os.system('clear')
 				return
 			else:
-				action_selection_menu(db, selected_keys)
+				action_selection_menu(db, raw, keys, selected_keys)
 		except:
-			action_selection_menu(db)
+			action_selection_menu(db, raw, keys, selected_keys)
 	
 	db_selection_menu()
 
