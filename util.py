@@ -33,7 +33,7 @@ class Exp():
 		self.children_inclusion = 'Tardia'
 		self.syllabus_source = 'EXP'
 		self.syllabus_size = 30
-	
+
 	def parse(self, filename):
 		config = ConfigParser.ConfigParser()
 		config.read(filename)
@@ -61,7 +61,7 @@ class Exp():
 			self.syllabus_source = config.get('exp', 'syllabus_source')
 		if config.has_option('exp', 'syllabus_size'):
 			self.syllabus_size = int(config.get('exp', 'syllabus_size'))
-		
+
 		if self.learning_function != 'N/A':
 			if self.learning_function != 'BP' and self.learning_function != 'BT':
 				raise ValueError('Invalid learning function value: {}'.format(self.learning_function))
@@ -75,7 +75,7 @@ class Exp():
 				raise ValueError('Invalid syllabus source value: {}'.format(self.syllabus_source))
 			if self.syllabus_size < 1:
 				raise ValueError('Invalid syllabus size value: {}'.format(self.syllabus_size))
-		
+
 		return self
 
 ############################# DATA MANAGEMENT #################################
@@ -89,7 +89,7 @@ class DataManager():
 		elif isinstance(inpt, basestring):
 			self.basename = inpt
 			self.filename = self.basename+'.db'
-	
+
 	def commit(self, values_list):
 		key = (self.exp.learning_function,self.exp.learning_rate,self.exp.learning_target,self.exp.children_inclusion,self.exp.syllabus_source,self.exp.syllabus_size)
 		raw = self.querry_raw()
@@ -104,13 +104,13 @@ class DataManager():
 			counter+=1
 		with gzip.open(self.filename, 'w') as f:
 			pickle.dump(raw, f, protocol=pickle.HIGHEST_PROTOCOL)
-	
+
 	def querry_raw(self):
 		if os.path.isfile(self.filename):
 			with gzip.open(self.filename) as f:
 				return pickle.load(f)
 		return {}
-	
+
 	def querry(self):
 		d = {}
 		raw = self.querry_raw()
@@ -121,7 +121,7 @@ class DataManager():
 				d[key][0].append(array.mean())
 				d[key][1].append(array.std())
 		return d
-	
+
 	colors = ['blue', 'red', 'lime', 'orange', 'purple']
 	def plot(self, keys_to_plot):
 		if len(keys_to_plot) > len(self.colors):
@@ -138,14 +138,17 @@ class DataManager():
 			if key[0] == 'N/A':
 				patches.append(mpatches.Patch(color=color, label='NEAT Regular'))
 			else:
-				label = u"Método: " + key[0] + '; Taxa: ' + str(key[1]) + '; Alvo: ' + key[2] + u"; Inclusão: " + key[3] + u"; Lições: " + str(key[4]) + '; Fonte: ' + str(key[5])
-				patches.append(mpatches.Patch(color=color, label=label))
+				if key == ('BP', 0.05, 'Filhos', 'Inicial', 'RND', 30):
+					patches.append(mpatches.Patch(color=color, label='Benchmark'))
+				else:
+					label = u"Método: " + key[0] + '; Taxa: ' + str(key[1]) + '; Alvo: ' + key[2] + u"; Inclusão: " + key[3] + u"; Lições: " + str(key[4]) + '; Fonte: ' + str(key[5])
+					patches.append(mpatches.Patch(color=color, label=label))
 
-		
+
 		continuous_line = mlines.Line2D([], [], label=u"Média dos melhores desempenhos", color = 'black')
 		dashed_line = mlines.Line2D([], [], label=u"Desvio padrão", linestyle = '--', color = 'black')
 		lines_legend = plt.legend(handles=[continuous_line, dashed_line], loc='upper left', fontsize = 'x-small')
-		
+
 		plt.legend(handles=patches, bbox_to_anchor=(0, 1, 1, 0), loc='lower center', title = self.basename, fontsize = 'x-small')
 		plt.gca().add_artist(lines_legend)
 
@@ -153,7 +156,7 @@ class DataManager():
 		plt.ylabel(u"Aptidão")
 		plt.savefig(self.basename+'.png', bbox_inches='tight')
 		plt.gcf().clear()
-		
+
 	def remove(self, keys):
 		raw = self.querry_raw()
 		for key in keys:
@@ -186,7 +189,7 @@ if __name__ == "__main__":
 			action_selection_menu(db, raw, keys, [])
 		except:
 			db_selection_menu()
-	
+
 	def action_selection_menu(db, raw, keys, selected_keys):
 		os.system('clear')
 		print db.basename
@@ -240,7 +243,7 @@ if __name__ == "__main__":
 				action_selection_menu(db, raw, keys, selected_keys)
 		except:
 			action_selection_menu(db, raw, keys, selected_keys)
-	
+
 	db_selection_menu()
 
 ############################# LEARNING METHODS ################################
@@ -293,7 +296,7 @@ def backpropagation(g, lessons, learning_rate):
 		else:
 			hidden_nodes.append(node)
 		i += 1
-	
+
 	for lesson in lessons:
 		#computing the output layer
 		(lesson_input, lesson_output) = lesson
@@ -302,13 +305,13 @@ def backpropagation(g, lessons, learning_rate):
 			#y = 1/(1+exp(-5x)) => y' = 5y(1-y)
 			error[node] = 5.0*outputs[node]*(1.0-outputs[node])*(lesson_output[node]-outputs[node])
 			update(node, back_links, node_eval_pos, learning_rate, g, error)
-			
+
 		#computing hidden nodes
 		for node in hidden_nodes:
 			error[node] = None
 		for node in hidden_nodes:
 			recursion(node, error, front_neighbours, g, back_links, node_eval_pos, learning_rate)
-	
+
 #------------------------------------Batch------------------------------------#
 
 def np_solve(X,Y):
@@ -340,14 +343,14 @@ def batch(g, lessons, learning_rate):
 					Y[node].append((math.log(lesson_output[node]/(1.0-lesson_output[node]))/5.0 - bias)/response)
 				else:
 					Y[node].append(lesson_output[node])
-	
+
 	#compute optimal w for each output node
 	w = {}
 	for node in g.net.output_nodes:
 		if len(X[node]) == 0: #if the output node is disconnected from the rest of the net, no fix can be done
 			continue
 		w[node] = np_solve(X[node], Y[node])
-	
+
 	#update the weights of the links with w
 	for node, _, _, _, _, links in g.net.node_evals:
 		if X.has_key(node) and not w[node] is None:
@@ -356,7 +359,7 @@ def batch(g, lessons, learning_rate):
 				g.connections[(links[i][0], node)].weight = links[i][1]
 
 ############################### EVALUATIONS ###################################
-		
+
 def evaluate_net(task, net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size):
 	if task == 'CartPole-v0' or task == 'CartPole-v1':
 		return go_CartPole(net, env, timeout, knowledge, attain_knowledge, knowledge_source, knowledge_size)
@@ -411,7 +414,7 @@ class CustomReproduction(DefaultReproduction):
 	def __init__(self, config, reporters, stagnation):
 		super(CustomReproduction, self).__init__(config.reproduction_config, reporters, stagnation)
 		self.config = config
-	
+
 	def create_new(self, genome_type, genome_config, num_genomes):
 		new_genomes = {}
 		for i in range(num_genomes):
@@ -460,13 +463,13 @@ class CustomReproduction(DefaultReproduction):
 		spawn_amounts = [int(round(n * norm)) for n in spawn_amounts]
 		new_population = {}
 		species.species = {}
-		
+
 		learning_function = None
 		if exp.learning_function == 'BP':
 			learning_function = backpropagation
 		elif exp.learning_function == 'BT':
 			learning_function = batch
-		
+
 		has_learning = not learning_function is None
 		if has_learning:
 			(writer, lessons) = syllabus
@@ -474,7 +477,7 @@ class CustomReproduction(DefaultReproduction):
 				lessons_to_learn = random.sample(lessons, min(exp.syllabus_size, len(lessons)))
 			elif exp.syllabus_source == 'RND':
 				lessons_to_learn = lessons
-		
+
 		for spawn, (sid, s, sfitness) in zip(spawn_amounts, species_fitness):
 			spawn = max(spawn, self.elitism)
 			if spawn <= 0:
@@ -492,12 +495,12 @@ class CustomReproduction(DefaultReproduction):
 			repro_cutoff = int(math.ceil(self.survival_threshold * len(old_members)))
 			repro_cutoff = max(repro_cutoff, 2)
 			old_members = old_members[:repro_cutoff]
-			
+
 			if has_learning and (exp.learning_target == 'Ambos' or exp.learning_target == 'Pais'):
 				for (_, g) in old_members:
 					if g != writer:
 						learning_function(g, lessons_to_learn, exp.learning_rate)
-						
+
 			while spawn > 0:
 				spawn -= 1
 				parent1_id, parent1 = random.choice(old_members)
@@ -507,11 +510,11 @@ class CustomReproduction(DefaultReproduction):
 				child.configure_crossover(parent1, parent2, config.genome_config)
 				child.mutate(config.genome_config)
 				child.net = FeedForwardNetwork.create(child, self.config)
-				
+
 				if has_learning and (exp.learning_target == 'Ambos' or exp.learning_target == 'Filhos'):
 					if exp.children_inclusion == 'Inicial' or (exp.children_inclusion == 'Tardia' and generation >= exp.generations/2):
 						learning_function(child, lessons_to_learn, exp.learning_rate)
-				
+
 				new_population[gid] = child
 				self.ancestors[gid] = (parent1_id, parent2_id)
 		return new_population
@@ -527,7 +530,7 @@ class CustomParallelEvaluator(ParallelEvaluator):
 	#marks genomes with their knowledge
 	def __init__(self, num_workers, eval_function, timeout=None):
 		super (CustomParallelEvaluator, self).__init__(num_workers, eval_function, timeout)
-	 
+
 	def evaluate(self, genomes, config):
 		jobs = []
 		for genome_id, genome in genomes:
@@ -539,7 +542,7 @@ class CustomParallelEvaluator(ParallelEvaluator):
 
 class CustomPopulation(Population):
 	#has the syllabus mechanics
-	
+
 	def __init__(self, config, initial_state=None):
 		self.reporters = ReporterSet()
 		self.config = config
@@ -564,7 +567,7 @@ class CustomPopulation(Population):
 			self.population, self.species, self.generation = initial_state
 
 		self.best_genome = None
-	
+
 	def run(self, fitness_function, best_fitnesses, exp):
 		syllabus = (None,[])
 		for gen in range(exp.generations):
