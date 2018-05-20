@@ -6,7 +6,7 @@
 #cores = 4
 
 #	Gym task to be performed. The default value is CartPole-v1.
-task: CartPole-v1
+task: MountainCar-v0
 
 #	Max number of steps allowed in the gym environment per evaluation. The default value is 500.
 #timeout = 500
@@ -36,7 +36,7 @@ learning_rate = 0.05
 
 #	We're able to choose the targets of the learning process.
 #	The values allowed are Pais, Filhos or Ambos. The default value is Ambos.
-learning_target = Pais
+learning_target = Ambos
 
 #	If children are supposed to learn, we can choose whether they start learning
 #	in the beginning of the evolutionary process or half way.
@@ -46,7 +46,7 @@ children_inclusion = Inicial
 #	The lessons to be learned can be generated randomly or from memories of
 #	the best individual in the population.
 #	The values allowed are EXP or RND. The default value is EXP.
-syllabus_source = EXP
+syllabus_source = RND
 
 #	The size of the syllabus can have a heavy impact on the results of the
 #	evolutionary process. Use this attribute to set the maximum size of the syllabus.
