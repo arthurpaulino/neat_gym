@@ -6,7 +6,7 @@
 #cores = 4
 
 #	Gym task to be performed. The default value is CartPole-v1.
-#task: CartPole-v1
+#task = CartPole-v1
 
 #	Max number of steps allowed in the gym environment per evaluation. The default value is 500.
 #timeout = 500

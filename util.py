@@ -414,11 +414,13 @@ class CustomReproduction(DefaultReproduction):
 	def __init__(self, config, reporters, stagnation):
 		super(CustomReproduction, self).__init__(config.reproduction_config, reporters, stagnation)
 		self.config = config
+		self.elitism = 5
+		self.survival_threshold = 0.2
 
 	def create_new(self, genome_type, genome_config, num_genomes):
 		new_genomes = {}
 		for i in range(num_genomes):
-			key = self.genome_indexer.get_next()
+			key = self.genome_indexer.next()
 			g = genome_type(key)
 			g.configure_new(genome_config)
 			g.net = FeedForwardNetwork.create(g, self.config)
@@ -505,7 +507,7 @@ class CustomReproduction(DefaultReproduction):
 				spawn -= 1
 				parent1_id, parent1 = random.choice(old_members)
 				parent2_id, parent2 = random.choice(old_members)
-				gid = self.genome_indexer.get_next()
+				gid = self.genome_indexer.next()
 				child = config.genome_type(gid)
 				child.configure_crossover(parent1, parent2, config.genome_config)
 				child.mutate(config.genome_config)

@@ -31,18 +31,19 @@ def worker_evaluate_genome(g, config):
 def train_network(env, pe):
 
 	pop = CustomPopulation(config)
-		
+
 	#start evolution
 	best_fitnesses = []
 	pop.run(pe.evaluate, best_fitnesses, exp)
-	
+
 	#commit statistics
 	DataManager(exp).commit(best_fitnesses)
-		
+
 ################################################################################################
 
 env = gym.make(exp.task)
 config = neat.Config(CustomGenome, CustomReproduction,	neat.DefaultSpeciesSet, neat.DefaultStagnation, exp.task)
+config.compatibility_threshold = 3.0
 if exp.learning_function != 'N/A':
 	#preventing speciation boom
 	config.genome_config.compatibility_weight_coefficient = 0.0
