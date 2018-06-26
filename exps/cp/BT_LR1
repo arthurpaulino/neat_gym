@@ -32,7 +32,7 @@ learning_function = BT
 #	For the batch algorithm, the learning rate refers to how close to the solution
 #	we want the final weights to be.
 #	The values allowed are in the interval (0.0; 1.0]. The default value is 0.1.
-learning_rate = 0.25
+learning_rate = 0.1
 
 #	We're able to choose the targets of the learning process.
 #	The values allowed are Pais, Filhos or Ambos. The default value is Ambos.
