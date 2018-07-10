@@ -5,7 +5,6 @@ from neat.six_util import iteritems, itervalues, iterkeys
 from neat.nn import FeedForwardNetwork
 from neat.reporting import ReporterSet
 from neat.math_util import mean
-import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import ConfigParser
@@ -122,7 +121,30 @@ class DataManager():
 				d[key][1].append(array.std())
 		return d
 
-	colors = ['blue', 'red', 'lime', 'orange', 'purple']
+	colors = ['blue', 'lime', 'orange', 'purple']
+	markers = ['v', 's', '*', '+']
+	
+	key_to_label = {
+		('BP', 0.05, 'Pais', 'Inicial', 'RND', 30): u"Estratégia 1211",
+		('BP', 0.05, 'Ambos', 'Inicial', 'RND', 30): u"Estratégia 1311",
+		('BP', 0.05, 'Filhos', 'Tardia', 'RND', 30): u"Estratégia 1121",
+		('BP', 0.05, 'Filhos', 'Inicial', 'EXP', 30): u"Estratégia 1112",
+		
+		('BT', 0.1, 'Filhos', 'Inicial', 'RND', 30): u"Estratégia 2111",
+		('BT', 0.2, 'Filhos', 'Inicial', 'RND', 30): u"Estratégia 3111",
+		('BT', 0.3, 'Filhos', 'Inicial', 'RND', 30): u"Estratégia 4111",
+		
+		('BT', 0.1, 'Pais', 'Inicial', 'RND', 30): u"Estratégia 2211",
+		('BT', 0.1, 'Ambos', 'Inicial', 'RND', 30): u"Estratégia 2311",
+		('BT', 0.1, 'Filhos', 'Tardia', 'RND', 30): u"Estratégia 2121",
+		('BT', 0.1, 'Filhos', 'Inicial', 'EXP', 30): u"Estratégia 2112",
+		
+		('BT', 0.3, 'Pais', 'Inicial', 'RND', 30): u"Estratégia 4211",
+		('BT', 0.3, 'Ambos', 'Inicial', 'RND', 30): u"Estratégia 4311",
+		('BT', 0.3, 'Filhos', 'Tardia', 'RND', 30): u"Estratégia 4121",
+		('BT', 0.3, 'Filhos', 'Inicial', 'EXP', 30): u"Estratégia 4112",
+	}
+	
 	def plot(self, keys_to_plot):
 		if len(keys_to_plot) > len(self.colors):
 			return
@@ -131,22 +153,23 @@ class DataManager():
 		ordered_keys_to_plot.sort(key=lambda tup: tup[0], reverse=True)
 		data = self.querry()
 		patches = []
-		for key, color in zip(ordered_keys_to_plot, self.colors):
-			(means, stds) = data[key]
-			plt.plot(range(len(means)), means, color = color, alpha=0.8)
-			plt.plot(range(len(stds)), stds, linestyle = '--', color = color, alpha=0.8)
+		for key, color, marker in zip(ordered_keys_to_plot, self.colors, self.markers):
 			if key[0] == 'N/A':
-				patches.append(mpatches.Patch(color=color, label='NEAT Regular'))
+				label = 'NEAT'
+			elif key == ('BP', 0.05, 'Filhos', 'Inicial', 'RND', 30):
+				label = 'Benchmark'
+				color = 'red'
+				marker = 'o'
 			else:
-				if key == ('BP', 0.05, 'Filhos', 'Inicial', 'RND', 30):
-					patches.append(mpatches.Patch(color=color, label='Benchmark'))
-				else:
-					label = u"Método: " + key[0] + '; Taxa: ' + str(key[1]) + '; Alvo: ' + key[2] + u"; Inclusão: " + key[3] + u"; Lições: " + str(key[4]) + '; Fonte: ' + str(key[5])
-					patches.append(mpatches.Patch(color=color, label=label))
-
+				label = self.key_to_label[key]
+		
+			(means, stds) = data[key]
+			plt.plot(range(len(means)), means, color=color, marker=marker, alpha=0.8)
+			plt.plot(range(len(stds)), stds, linestyle=':', color=color, marker=marker, alpha=0.8)
+			patches.append(plt.plot([], [], marker=marker, color=color, label=label)[0])
 
 		continuous_line = mlines.Line2D([], [], label=u"Média dos melhores desempenhos", color = 'black')
-		dashed_line = mlines.Line2D([], [], label=u"Desvio padrão", linestyle = '--', color = 'black')
+		dashed_line = mlines.Line2D([], [], label=u"Desvio padrão", linestyle = ':', color = 'black')
 		lines_legend = plt.legend(handles=[continuous_line, dashed_line], loc='upper left', fontsize = 'x-small')
 
 		plt.legend(handles=patches, bbox_to_anchor=(0, 1, 1, 0), loc='lower center', title = self.basename, fontsize = 'x-small')
