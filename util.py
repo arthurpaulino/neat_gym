@@ -125,24 +125,24 @@ class DataManager():
 	markers = ['v', 's', '*', '+']
 	
 	key_to_label = {
-		('BP', 0.05, 'Pais', 'Inicial', 'RND', 30): u"Estratégia 1211",
-		('BP', 0.05, 'Ambos', 'Inicial', 'RND', 30): u"Estratégia 1311",
-		('BP', 0.05, 'Filhos', 'Tardia', 'RND', 30): u"Estratégia 1121",
-		('BP', 0.05, 'Filhos', 'Inicial', 'EXP', 30): u"Estratégia 1112",
+		('BP', 0.05, 'Pais', 'Inicial', 'RND', 30): 'ceNEAT-PARENTS',
+		('BP', 0.05, 'Ambos', 'Inicial', 'RND', 30): 'ceNEAT-BOTH',
+		('BP', 0.05, 'Filhos', 'Tardia', 'RND', 30): 'ceNEAT-LATE',
+		('BP', 0.05, 'Filhos', 'Inicial', 'EXP', 30): 'ceNEAT-EXP',
 		
-		('BT', 0.1, 'Filhos', 'Inicial', 'RND', 30): u"Estratégia 2111",
-		('BT', 0.2, 'Filhos', 'Inicial', 'RND', 30): u"Estratégia 3111",
-		('BT', 0.3, 'Filhos', 'Inicial', 'RND', 30): u"Estratégia 4111",
+		('BT', 0.1, 'Filhos', 'Inicial', 'RND', 30): 'ceNEAT-ELM(1)',
+		('BT', 0.2, 'Filhos', 'Inicial', 'RND', 30): 'ceNEAT-ELM(2)',
+		('BT', 0.3, 'Filhos', 'Inicial', 'RND', 30): 'ceNEAT-ELM(3)',
 		
-		('BT', 0.1, 'Pais', 'Inicial', 'RND', 30): u"Estratégia 2211",
-		('BT', 0.1, 'Ambos', 'Inicial', 'RND', 30): u"Estratégia 2311",
-		('BT', 0.1, 'Filhos', 'Tardia', 'RND', 30): u"Estratégia 2121",
-		('BT', 0.1, 'Filhos', 'Inicial', 'EXP', 30): u"Estratégia 2112",
+		('BT', 0.1, 'Pais', 'Inicial', 'RND', 30): 'ceNEAT-ELM-PARENTS',
+		('BT', 0.1, 'Ambos', 'Inicial', 'RND', 30): 'ceNEAT-ELM-BOTH',
+		('BT', 0.1, 'Filhos', 'Tardia', 'RND', 30): 'ceNEAT-ELM-LATE',
+		('BT', 0.1, 'Filhos', 'Inicial', 'EXP', 30): 'ceNEAT-ELM-EXP',
 		
-		('BT', 0.3, 'Pais', 'Inicial', 'RND', 30): u"Estratégia 4211",
-		('BT', 0.3, 'Ambos', 'Inicial', 'RND', 30): u"Estratégia 4311",
-		('BT', 0.3, 'Filhos', 'Tardia', 'RND', 30): u"Estratégia 4121",
-		('BT', 0.3, 'Filhos', 'Inicial', 'EXP', 30): u"Estratégia 4112",
+		('BT', 0.3, 'Pais', 'Inicial', 'RND', 30): 'ceNEAT-ELM-PARENTS',
+		('BT', 0.3, 'Ambos', 'Inicial', 'RND', 30): 'ceNEAT-ELM-BOTH',
+		('BT', 0.3, 'Filhos', 'Tardia', 'RND', 30): 'ceNEAT-ELM-LATE',
+		('BT', 0.3, 'Filhos', 'Inicial', 'EXP', 30): 'ceNEAT-ELM-EXP',
 	}
 	
 	def plot(self, keys_to_plot):
@@ -157,7 +157,7 @@ class DataManager():
 			if key[0] == 'N/A':
 				label = 'NEAT'
 			elif key == ('BP', 0.05, 'Filhos', 'Inicial', 'RND', 30):
-				label = 'Benchmark'
+				label = 'ceNEAT'
 				color = 'red'
 				marker = 'o'
 			else:
